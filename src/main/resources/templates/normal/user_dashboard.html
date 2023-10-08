@@ -7,7 +7,10 @@
 <body>
 <section>
     <h1> this is user dashboard</h1>
-    <h2>here we are going to write about manager</h2>
+    <h1>this is your private dashboard</h1>
+    <h1>user name <span th:text="${user.name}"></span></h1>
+    <h1>user email <span th:text="${user.email}"></span></h1>
+    <h1><a href="" th:href="@{/logout}"></a> </h1>
 </section>
 </body>
 </html>
