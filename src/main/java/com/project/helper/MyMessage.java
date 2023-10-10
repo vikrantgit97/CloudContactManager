@@ -1,6 +1,7 @@
 package com.project.helper;
 
 public class MyMessage {
+
     private String content;
     private String type;
 

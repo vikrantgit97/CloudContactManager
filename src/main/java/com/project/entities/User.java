@@ -10,19 +10,27 @@ import java.util.List;
 @Entity
 @Table(name = "USER")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     @NotBlank(message = "Name field is required !!")
     @Size(min=2,max=20,message = "min 2 and max 20 characters are allowed !!")
     private String name;
+
     @Column(unique=true)
     @Email
     private String email;
+
     private String password;
+
     private String role;
+
     private boolean enable;
+
     private String imageUrl;
+
     @Column(length = 500)
     private String about;
 

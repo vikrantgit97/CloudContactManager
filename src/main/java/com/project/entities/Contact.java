@@ -5,15 +5,23 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CONTACT")
 public class Contact {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int cId;
+
     private String name;
+
     private String secondName;
+
     private String work;
+
     private String email;
+
     private String phone;
+
     private String image;
+
     @Column(length = 1000)
     private String description;
 

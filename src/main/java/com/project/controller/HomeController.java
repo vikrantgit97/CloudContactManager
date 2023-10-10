@@ -23,7 +23,7 @@ public class HomeController {
     private UserRepo userRepo;
 
 
-    @RequestMapping("/")
+    @RequestMapping(value={"/", "/home"})
     public String home(Model model) {
         model.addAttribute("title", "Home -smart contact manager");
         return "home";
@@ -43,29 +43,29 @@ public class HomeController {
     }
 
     //handler for registering user
-    @RequestMapping(value = "/do_register", method = RequestMethod.POST)
-    public String registerUser(@Valid @ModelAttribute("user") User user, BindingResult result1, @RequestParam(value = "agreement", defaultValue = "false")
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public String registerUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult, @RequestParam(value = "agreement", defaultValue = "false")
     boolean agreement, Model model, HttpSession session) {
         try {
             if (!agreement) {
                 System.out.println("you have not agreed the terms and condition ");
-                throw new Exception("you have not agreed the terms and condition");
+                throw new IllegalArgumentException("you have not agreed the terms and condition");
             }
-            if (result1.hasErrors()) {
-                System.out.println("ERROR " + result1.toString());
+            if (bindingResult.hasErrors()) {
+                System.out.println("ERROR " + bindingResult);
                 model.addAttribute("user", user);
                 return "signup";
             }
-            user.setRole("User_Role");
+            user.setRole("ROLE_USER");
             user.setEnable(true);
             user.setImageUrl("default.png");
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
             System.out.println("Agreement: " + agreement + "  USER :" + user);
-            User result = this.userRepo.save(user);
+            User result = userRepo.save(user);
+            // after successfully registered,  form data must return empty
             model.addAttribute("user ", new User());
-            session.setAttribute("message", new MyMessage("Sucessfully Registered", "alert-success"));
-            return "signup";
+            session.setAttribute("message", new MyMessage("Successfully Registered", "alert-success"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,6 +73,8 @@ public class HomeController {
             session.setAttribute("message", new MyMessage("Something went wrong " + e.getMessage(), "alert-danger"));
             return "signup";
         }
+
+        return "signup";
     }
         //handler for custom login
     @RequestMapping("/signin")
