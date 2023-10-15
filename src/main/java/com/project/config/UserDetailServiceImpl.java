@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserDetailServiceImpl implements UserDetailsService {
     //fetching from database
 
@@ -17,7 +19,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.getUserByUserName(username);
         if (username == null) {
-            throw new UsernameNotFoundException("Could not found User ");
+            throw new UsernameNotFoundException("Could not found User "+ username);
         }
 
         CustomUserDetails customUserDetails = new CustomUserDetails(user);

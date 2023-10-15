@@ -1,9 +1,11 @@
 package com.project.entities;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.util.Objects;
 
 @Entity
-@Table(name = "CONTACT")
+@Table(name = "contact")
 public class Contact {
 
     @Id
@@ -103,4 +105,16 @@ public class Contact {
         this.user = user;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Contact contact = (Contact) o;
+        return cId == contact.cId && Objects.equals(name, contact.name) && Objects.equals(secondName, contact.secondName) && Objects.equals(work, contact.work) && Objects.equals(email, contact.email) && Objects.equals(phone, contact.phone) && Objects.equals(image, contact.image) && Objects.equals(description, contact.description) && Objects.equals(user, contact.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cId, name, secondName, work, email, phone, image, description, user);
+    }
 }

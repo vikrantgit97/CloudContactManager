@@ -1,354 +1,343 @@
 package com.project.controller;
 
-/*import com.project.entities.User;
-import com.project.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.security.Principal;
-
-@Controller
-@RequestMapping("/user")
-public class UserController {
-    @Autowired
-    private UserRepo userRepo;
-
-    @RequestMapping("/index")
-    public String dashboard(Model model, Principal principal) {
-        String userName = principal.getName();
-        System.out.println("username: "+userName);
-        User userByUserName = userRepo.getUserByUserName(userName);
-        System.out.println("user: "+userByUserName);
-        model.addAttribute("user ",userByUserName);
-        return "normal/user_dashboard";
-    }
-}*/
-
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
-import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 
 import com.project.entities.Contact;
+import com.project.entities.MyOrder;
 import com.project.entities.User;
 import com.project.helper.MyMessage;
-import com.project.helper.UserService;
+import com.project.repo.ContactRepo;
+import com.project.repo.MyOrderRepository;
+import com.project.repo.UserRepo;
+
+import com.razorpay.Order;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 
 
 @Controller
 @RequestMapping("/user")
 public class UserController {
 
-	/*
-	@Autowired
-	UserRepository userRepository;
-	*/
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Autowired
-    UserService userService;
+    private final UserRepo userRepository;
 
-    User currentLogInUserDetails = null;
+    private final ContactRepo contactRepository;
 
-    /*
-     * Common data retrieved for all handler methods
-     * */
+    private final MyOrderRepository myOrderRepository;
+
+    public UserController(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepo userRepository, ContactRepo contactRepository, MyOrderRepository myOrderRepository) {
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.userRepository = userRepository;
+        this.contactRepository = contactRepository;
+        this.myOrderRepository = myOrderRepository;
+    }
+
     @ModelAttribute
-    public void commonUserData(Model model, Principal principal) {
+    public void addCommonData(Model model, Principal principal) {
+        String userName = principal.getName();
+        System.out.println("UserName = " + userName);
+
+        User users = this.userRepository.getUserByUserName(userName);
+        System.out.println("User = " + users);
+
+        model.addAttribute("users", users);
+    }
+
+    @RequestMapping("/index")
+    public String dashboardHandler(Model model, Principal principal) {
+        return "normal/user_dashboard";
+    }
+
+    // Add Contact Handler
+    @GetMapping("add-contact")
+    public String openAddContactHandler(Model model) {
+        model.addAttribute("title", "Add Contact");
+        model.addAttribute("contact", new Contact());
+
+        return "normal/add_contact_form";
+    }
+
+    // Processing Add Contact Handler
+    @PostMapping("/process-contact")
+    public String processConatctHandler(@ModelAttribute("contact") Contact contact,
+                                        @RequestParam("profileImages") MultipartFile file, Principal principal, HttpSession session) {
+        try {
+            String name = principal.getName();
+            User users = this.userRepository.getUserByUserName(name);
+
+            contact.setUser(users);
+            System.out.println("------" + users);
+            if (file.isEmpty()) {
+                // if file is empty then try our MyMessage
+                contact.setImage("contact.png");
+            } else {
+                // file the file to folder and update the name to contact
+                contact.setImage(file.getOriginalFilename());
+
+                File savefile = new ClassPathResource("static/image").getFile();
+
+                Path path = Paths.get(savefile.getAbsolutePath() + File.separator + file.getOriginalFilename());
+                Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            users.getContacts().add(contact);
+            this.userRepository.save(users);
+
+            System.out.println("Contact = " + contact);
+            System.out.println("Add to data base");
+
+            session.setAttribute("Message", new MyMessage("Your contact is added !!", "success"));
+
+            System.out.println(session.getAttribute("MyMessage"));
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+
+            session.setAttribute("Message", new MyMessage("Something went to wrong!! Try again...", "danger"));
+        }
+
+        return "normal/add_contact_form";
+    }
+
+    // Show Contact Handler
+    // per page = 5[n]
+    // current page = 0 [page]
+    @GetMapping("/show-contacts/{page}")
+    public String showContactHandler(@PathVariable("page") Integer page, Model model, Principal principal) {
+        String userName = principal.getName();
+        User users = this.userRepository.getUserByUserName(userName);
+
+        // currentPage - page
+        // Contact Per page - 5
+        Pageable pageable = PageRequest.of(page, 3);
+
+        Page<Contact> contact = this.contactRepository.getContactsByUser(users.getId(), pageable);
+
+        model.addAttribute("contact", contact);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", contact.getTotalPages());
+
+        return "normal/show_contacts";
+    }
+
+    // Showing particular contact details
+    @GetMapping("/{cId}/contact")
+    public String showContactDetailHandler(@PathVariable("cId") Integer cId, Model model, Principal principal) {
+        List<Contact> findAll = this.contactRepository.findAll();
+        Iterator<Contact> iterator = findAll.iterator();
+
+        Contact contact = null;
+        while (iterator.hasNext()) {
+            Contact next = iterator.next();
+            if (next.getcId() == cId)
+                contact = next;
+        }
 
         String userName = principal.getName();
-        System.out.println("Logged In Username :"+userName);
-        User currentLogInUserDetails = userService.findUserByEmail(userName);
-        System.out.println(currentLogInUserDetails);
-        model.addAttribute("user", currentLogInUserDetails);
-        this.currentLogInUserDetails = currentLogInUserDetails;
-    }
+        User users = this.userRepository.getUserByUserName(userName);
 
-    /* User home handler*/
-    @RequestMapping("/index")
-    public String dashboard(Model model, Principal principal ) {
-
-        model.addAttribute("title", "User Dashboard");
-        return "user/user_dashboard";
-
-    }
-
-    /* Handler to add contact to user dash-board*/
-    @GetMapping("/add-contact-form")
-    public String addUserContact(Model model) {
-
-        model.addAttribute("title", "Add contact : Smart contact Manager");
-        model.addAttribute("contact",new Contact());
-        return "user/add_contact_form";
-
-    }
-
-    /**
-     *Add contact-form-data processing to store in
-     *respective users account
-     **/
-    @PostMapping("/process-contact")
-    public String processAddContact(@Valid @ModelAttribute Contact contact, BindingResult result ,@RequestParam("profileImage") MultipartFile mpFile,Principal principal, Model model, HttpSession session) {
-
-        Path destPath = null;
-        String originalFilename = null;
-
-        /** making image name unique*/
-        String currDateTime= (LocalDateTime.now()+"").replace(":", "-");
-
-        /**
-         * Here we added contact to respective user list to get list of contact using method
-         * First we retrieve current user
-         * next add current user into his contact fields
-         * next add this contact info retrieved from form data into users contact List
-         * send this updated contact form data to user contact-list
-         * */
-
-        try {
-            /**
-             * Setting explicitly retrieving image data using @RequestParam, first save image into /resource/static/image folder then
-             * save this image unique name into database as a Url string
-             * */
-
-            if(mpFile.isEmpty()) {
-                System.out.println("file is empty");
-                //	throw new Exception("Image file must not selected..!!");
-                originalFilename = "contact_profile.png";
-            }else {
-                originalFilename = currDateTime+"@"+mpFile.getOriginalFilename();
-            }
-            /** retrieve current class-path resource folder relative path */
-            File savedFile = new ClassPathResource("/static/image").getFile();
-
-            destPath = Paths.get(savedFile.getAbsolutePath()+File.separator+originalFilename);
-            System.out.println("Image path :"+destPath);
-
-            contact.setImage(originalFilename);
-
-            /** first complete contact form setting all attributes details */
-            contact.setUser(currentLogInUserDetails);
-
-            /** Retrieving current users all contact list and again add current retrieved contact info into the list */
-            currentLogInUserDetails.getContacts().add(contact);
-
-            /** save this updated or added contacts  user into database  */
-            User addedContactResult = userService.addContactInUser(currentLogInUserDetails);
-
-            if(addedContactResult !=null) {
-
-                /** Now actual storing image into given path, when first Registered this file path location into DB then now*/
-                Files.copy(mpFile.getInputStream(), destPath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("After successful contact added : "+addedContactResult);
-            }
-
-            /** success message alert */
-            session.setAttribute("message", new MyMessage("Contact saved successfully.....!!", "success"));
-            model.addAttribute("contact", new Contact());
-            return "user/add_contact_form";
-
-        }catch(Exception e) {
-
-            System.out.println("Error : "+e);
-            e.printStackTrace();
+        if (users.getId() == contact.getUser().getId()) {
             model.addAttribute("contact", contact);
-
-            /** failure message alert */
-            session.setAttribute("message", new MyMessage("Something goes wrong, please try again.....!!", "danger"));
-            return "user/add_contact_form";
+            model.addAttribute("title", contact.getName());
         }
 
+        return "normal/contact_detail";
     }
 
-    @GetMapping("/show-contacts/{page}")
-    public String showContacts(@PathVariable("page") Integer page,  Model model, Principal principal) {
+    // Delete Contact Handler
 
-        /** first get current log in user details*/
-        String currentUser = principal.getName();
-        User currentUserDetails = this.userService.findUserByEmail(currentUser);
+    @GetMapping("/delete/{cId}")
+    @Transactional
+    public String deleteContactHandler(@PathVariable("cId") Integer cId, Principal principal, HttpSession session) {
+        Contact contact = this.contactRepository.findById(cId).get();
 
-        /** First we will get Pageable objects to store current page index and number of records to show end user
-         *
-         * - Current page index is - 0, --> page
-         * - Number of contacts per page = 6 --->
-         * */
-        Pageable pageable = PageRequest.of(page, 5);
+        String userName = principal.getName();
+        User users = this.userRepository.getUserByUserName(userName);
 
-        /** getting list of contacts from user */
-        Page<Contact> contacts = this.userService.getContactsList(currentUserDetails.getId(), pageable);
-        System.out.println(contacts.getTotalPages());
+//		if(users.getId()==contact.getUsers().getId())
+//		{
+//			contact.setUsers(null);
+//			this.contactRepository.delete(contact);
+        users.getContacts().remove(contact);
 
-        model.addAttribute("titile", "Show contacts - Smart contact Manager");
-        model.addAttribute("contacts", contacts);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", contacts.getTotalPages());
+        this.userRepository.save(users);
 
+        session.setAttribute("Message", new MyMessage("Contact deleted Successfully...", "success"));
+//		}
 
-
-        return "user/show_contacts";
-
-    }
-
-    /** Show respective contact details */
-    @SuppressWarnings("unlikely-arg-type")
-    @GetMapping("/{cId}/contact")
-    public String showContact(@PathVariable("cId") int cId, Principal principal, Model model ) {
-        System.out.println("CID : "+cId);
-
-        String currentUser = principal.getName();
-        model.addAttribute("title", "Contact details : Smart contact Manager");
-
-        /** Retrieving user contact details */
-        Contact contactDetail = this.userService.getContactDetail(cId);
-
-        /** checking if url miss-leading happen then check both current login-user and contact user name is same */
-        if(! currentUser.equals(contactDetail.getUser().getEmail()))
-            model.addAttribute("message", new MyMessage("You are not an authorized user for this contact", "denger"));
-        else
-            model.addAttribute("contact", contactDetail);
-
-        return "user/show_user_contact_details";
-    }
-
-    /** deleting contact from given user lists */
-    @GetMapping("/delete-contact/{cId}")
-    public String deleteContact(@PathVariable("cId") Integer cId, Principal principal, Model model ) {
-
-        /** first take current login user */
-        String name = principal.getName();
-        User currentUser = this.userService.findUserByEmail(name);
-
-        /** take contact details by using its ID */
-        Contact resultContact = this.userService.getContactById(cId);
-
-
-        /** compare both userID for avoiding url miss-leading purpose  */
-        if(currentUser.getId() == resultContact.getUser().getId()) {
-
-            /**Remove contact from given user List*/
-            this.userService.deleteContact(currentUser, resultContact);
-
-            /**delete image from our folder also*/
-            // CODE HERE
-
-        }else {
-            model.addAttribute("message", new MyMessage("You are not an authorized user for this contact", "denger"));
-        }
         return "redirect:/user/show-contacts/0";
+        // return "deletehandler";
     }
 
-    /** Open Update form handler */
-    @GetMapping("/update-contact/{cId}")
-    public String updateContact(@PathVariable("cId") Integer cId, Model model ) {
-        Contact contact = this.userService.getContactById(cId);
+    // Open update form handler
+    @PostMapping("/update-contact/{cId}")
+    public String updateform(@PathVariable("cId") Integer cId, Model model) {
+        model.addAttribute("title", "Update contact");
 
-        model.addAttribute("title", "Update contact - Smart Contact Manager");
-        model.addAttribute("subTitle", "Update your Contact");
+        Contact contact = this.contactRepository.findById(cId).get();
         model.addAttribute("contact", contact);
 
-        return "user/update_contact";
+        return "normal/update_form";
     }
 
-
-    /** Process the update contact form  */
-    @PostMapping("/process-update-contact")
-    public String processUpdateContact(@ModelAttribute Contact contact, @RequestParam("profileImage") MultipartFile file, Model model, Principal principal, HttpSession session) {
-
-        /** old contact details */
-        Contact oldContact = this.userService.getContactById(contact.getcId());
-
+    // Process Update Contact handler
+    @PostMapping("/process-update")
+    public String updateProcessHandler(@ModelAttribute Contact contact,
+                                       @RequestParam("profileImages") MultipartFile file, Model model, HttpSession session, Principal principal) {
         try {
+            // Old contact details
+            Contact oldContactDetail = this.contactRepository.findById(contact.getcId()).get();
 
-            /** we need current user details to set inside contact entity fields */
-            User currentUser = this.userService.findUserByEmail(principal.getName());
+            if (!file.isEmpty()) {
+                // file work...
+                // rewrite
 
-            /** now set this user into passed contact list*/
-            contact.setUser(currentUser);
+                // Delete Old Photo
+                File deletefile = new ClassPathResource("static/image").getFile();
+                File file1 = new File(deletefile, oldContactDetail.getImage());
+                file1.delete();
 
-            /** multi-part file writer */
-            File saveFile = new ClassPathResource("/static/image").getFile();
+                // Update Old Photo
+                File savefile = new ClassPathResource("static/image").getFile();
 
-            /** creating unique file-name for each image */
-            String uniqueImageName = (LocalDateTime.now()+"").replace(":", "-")+"@"+file.getOriginalFilename();
-
-            /** If file is not empty */
-            if(!file.isEmpty()) {
-
-                /** means user send updated photo*/
-
-                // first delete previous photo from DB and from saved folder
-                if(oldContact.getImage() !=null) {
-                    File deleteFile = new File(saveFile, oldContact.getImage());
-                    deleteFile.delete();
-                }
-
-                // Update new image into our folder location
-                Path path = Paths.get(saveFile+File.separator+uniqueImageName);
+                Path path = Paths.get(savefile.getAbsolutePath() + File.separator + file.getOriginalFilename());
                 Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-                /** now copied file name must be save with same name inside DATABASE */
-                contact.setImage(uniqueImageName);
 
-            }else {
-
-
-                /** mean user not update photo, then set it's previous/old photo*/
-                if(oldContact.getImage() !=null)
-                    contact.setImage(oldContact.getImage());
-                else
-                    contact.setImage("contact_profile.png");
-
+                contact.setImage(file.getOriginalFilename());
+            } else {
+                contact.setImage(oldContactDetail.getImage());
             }
 
+            User users = this.userRepository.getUserByUserName(principal.getName());
+            contact.setUser(users);
+            this.contactRepository.save(contact);
 
-            /** here contact is saved if exist then update otherwise it saved as new contact */
-            Contact updatedContact = this.userService.updateContactInUser(contact);
-            session.setAttribute("message", new MyMessage("Contact successfully updated", "success"));
+            session.setAttribute("Message", new MyMessage("Your contact is updated...", "success"));
+
         } catch (Exception e) {
-            session.setAttribute("message", new MyMessage("Contact updation failed ", "danger"));
             e.printStackTrace();
-            model.addAttribute("contact", oldContact);
-            return "redirect:/user/update-contact/"+contact.getcId();
         }
 
+        System.out.println("CONTACT NAME = " + contact.getName());
+        System.out.println("CONTACT ID = " + contact.getcId());
 
-        System.out.println("contact name : "+contact.getName());
-        System.out.println("contact ID : "+contact.getcId());
-        return "redirect:/user/"+contact.getcId()+"/contact";
+        return "redirect:/user/" + contact.getcId() + "/contact";
     }
 
-    /** user profile hander */
+    // Profile Handler
     @GetMapping("/profile")
-    public String showUserProfile() {
-
-        return "user/profile";
+    public String profileHandler(Model model) {
+        model.addAttribute("title", "Profile");
+        return "normal/profile";
     }
 
+    // Open Setting Handler
+    @GetMapping("/settings")
+    public String settingHandler() {
+        return "normal/setting";
+    }
 
+    // Change Password..handler
+    @PostMapping("/change-password")
+    public String changePasswordHandler(@RequestParam("oldPassword") String oldPassword,
+                                        @RequestParam("newPassword") String newPassword, Principal principal, HttpSession session) {
+        System.out.println("OLD PASSWORD : " + oldPassword);
+        System.out.println("NEW PASSWORD : " + newPassword);
 
+        String userName = principal.getName();
+        User currentUser = this.userRepository.getUserByUserName(userName);
+        System.out.println(currentUser.getPassword());
 
+        if (this.bCryptPasswordEncoder.matches(oldPassword, currentUser.getPassword())) {
+            // Change the Password
+            currentUser.setPassword(this.bCryptPasswordEncoder.encode(newPassword));
+            this.userRepository.save(currentUser);
 
+            session.setAttribute("Message", new MyMessage("Your Password is changed successfully...", "success"));
+        } else {
+            // error
+            session.setAttribute("Message", new MyMessage("Please enter your correct old password !!", "danger"));
+            return "redirect:/user/settings";
+        }
+
+        return "redirect:/user/index";
+    }
+
+    // creating order for payment
+    @PostMapping("/create_order")
+    @ResponseBody
+    public String createOrder(@RequestBody Map<String, Object> data, Principal principal) throws RazorpayException {
+        System.out.println(data);
+
+        int amt = Integer.parseInt(data.get("amount").toString());
+
+        RazorpayClient client = new RazorpayClient("rzp_test_Iw3y0w0aj23wxf", "MB77O4XNuccsalnLCq5g0A4t");
+
+        JSONObject ob = new JSONObject();
+        ob.put("amount", amt * 100);
+        ob.put("currency", "INR");
+        ob.put("receipt", "txn_235425");
+
+        // creating new order
+        Order order = client.orders.create(ob);
+        System.out.println(order);
+
+        // save the order in database
+        MyOrder myOrder = new MyOrder();
+        myOrder.setAmount(order.get("amount") + "");
+        myOrder.setOrderId(order.get("id"));
+        myOrder.setPaymentId(null);
+        myOrder.setStatus("created");
+        myOrder.setUser(this.userRepository.getUserByUserName(principal.getName()));
+        myOrder.setReceipt(order.get("receipt"));
+
+        this.myOrderRepository.save(myOrder);
+
+        // if you want you can save this to your data...
+        return order.toString();
+    }
+
+    @PostMapping("/update_order")
+    public ResponseEntity<?> updateOrder(@RequestBody Map<String, Object> data) {
+        MyOrder myOrder = this.myOrderRepository.findByOrderId(data.get("order_id").toString());
+        myOrder.setPaymentId(data.get("payment_id").toString());
+        myOrder.setStatus(data.get("status").toString());
+
+        this.myOrderRepository.save(myOrder);
+
+        System.out.println(data);
+        Map<Object, Object> map = new HashMap<>();
+        map.put("msg", "updated");
+
+        return ResponseEntity.ok(map);
+    }
 
 }
