@@ -14,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class MyConfig /*extends WebSecurityConfigurerAdapter*/ {
+public class MyConfig {
 
     @Bean
     public UserDetailsService getUserDetailsService() {
@@ -48,28 +48,14 @@ public class MyConfig /*extends WebSecurityConfigurerAdapter*/ {
                 .authorizeRequests(req ->
                         req
                                 .requestMatchers("/admin/**").hasAnyRole("ADMIN")
-                                .requestMatchers("/**").hasAnyAuthority("USER")
+                                .requestMatchers("/user/**").hasAnyAuthority("USER")
+                                .requestMatchers("/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/signup")
+                        .loginPage("/signin")
                         .loginProcessingUrl("/dologin").defaultSuccessUrl("/user/index"));
         return http.build();
     }
-
-
-/*    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-      //  super.configure(http);
-        http.authorizeHttpRequests().
-                requestMatchers("/admin/**").
-                hasRole("ADMIN").requestMatchers("/user/**").
-                hasRole("USER").requestMatchers("/**").
-                permitAll().and().formLogin().
-                loginPage("/signin").
-                loginProcessingUrl("/dologin").defaultSuccessUrl("/user/index").
-                //failureUrl("/login-fail").
-                and().csrf().disable();
-    }*/
-
 }

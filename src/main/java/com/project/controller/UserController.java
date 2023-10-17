@@ -64,10 +64,10 @@ public class UserController {
         String userName = principal.getName();
         System.out.println("UserName = " + userName);
 
-        User users = this.userRepository.getUserByUserName(userName);
-        System.out.println("User = " + users);
+        User user = this.userRepository.getUserByUserName(userName);
+        System.out.println("User = " + user);
 
-        model.addAttribute("users", users);
+        model.addAttribute("user", user);
     }
 
     @RequestMapping("/index")

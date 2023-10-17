@@ -1,6 +1,5 @@
 <!doctype html >
-<!--<html lang="en" xmlns="http://www.thymeleaf.org" th:replace=base::layout(~{::section})>-->
-<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="base::layout(~{::section})">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{base::layout(~{::section})}">
 <head>
     <meta charset="UTF-8"/>
     <title>this is signup page</title>
@@ -24,7 +23,7 @@
                     </div>
                     <h1 class="text-center">Register here !!</h1>
 
-                    <form action="" th:action="@{/do_register}" method="post" th:object="${user}">
+                    <form action="" th:action="@{/register}" method="post" th:object="${user}">
 
 
                         <label for="name_field">Your Name</label>

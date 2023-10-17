@@ -23,7 +23,7 @@ public class HomeController {
     private UserRepo userRepo;
 
 
-    @RequestMapping(value={"/", "/home"})
+    @RequestMapping(value = {"/", "/home"})
     public String home(Model model) {
         model.addAttribute("title", "Home -smart contact manager");
         return "home";
@@ -76,11 +76,12 @@ public class HomeController {
 
         return "signup";
     }
-        //handler for custom login
+
+    //handler for custom login
     @RequestMapping("/signin")
-        public String customLogin(Model model){
+    public String customLogin(Model model) {
         model.addAttribute("title", "login -smart contact manager");
-            return "login";
-        }
+        return "login";
+    }
 
 }
