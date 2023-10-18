@@ -64,7 +64,7 @@ public class HomeController {
             System.out.println("Agreement: " + agreement + "  USER :" + user);
             User result = userRepo.save(user);
             // after successfully registered,  form data must return empty
-            model.addAttribute("user ", new User());
+            model.addAttribute("user", new User());
             session.setAttribute("message", new MyMessage("Successfully Registered", "alert-success"));
 
         } catch (Exception e) {
