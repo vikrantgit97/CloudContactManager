@@ -1,6 +1,6 @@
-package com.acks.configuration;
+package com.contact.configuration;
 
-import com.acks.model.Users;
+import com.contact.model.Users;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

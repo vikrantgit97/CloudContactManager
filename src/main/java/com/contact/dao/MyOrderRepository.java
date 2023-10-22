@@ -1,11 +1,11 @@
-package com.acks.dao;
+package com.contact.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.acks.model.MyOrder;
+import com.contact.model.MyOrder;
 
 public interface MyOrderRepository extends JpaRepository<MyOrder, Long> {
-
-    MyOrder findByOrderId(String orderId);
+	
+	MyOrder findByOrderId(String orderId);
 
 }

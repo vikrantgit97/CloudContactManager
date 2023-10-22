@@ -1,7 +1,8 @@
-package com.acks.model;
+package com.contact.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+
+import javax.persistence.*;
 
 @Entity
 public class Contact {
@@ -24,7 +25,6 @@ public class Contact {
 
     public Contact() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
     public Users getUsers() {
@@ -103,5 +103,4 @@ public class Contact {
     public boolean equals(Object obj) {
         return this.cId == ((Contact) obj).getcId();
     }
-
 }

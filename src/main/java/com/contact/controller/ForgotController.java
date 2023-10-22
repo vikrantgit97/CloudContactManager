@@ -1,31 +1,35 @@
-package com.acks.controller;
+package com.contact.controller;
 
-import com.acks.dao.UserRepository;
-import com.acks.model.Users;
-import com.acks.service.EmailService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Random;
+
+import javax.servlet.http.HttpSession;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Random;
+import com.contact.dao.UserRepository;
+import com.contact.model.Users;
+import com.contact.service.EmailService;
 
 @Controller
 public class ForgotController {
 
     Random random = new Random(1000);
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    public ForgotController(EmailService emailService, UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.emailService = emailService;
+        this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
 
     //Email id form open handler
     @RequestMapping("/forgot")

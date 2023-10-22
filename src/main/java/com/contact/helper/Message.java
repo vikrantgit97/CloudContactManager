@@ -1,4 +1,4 @@
-package com.acks.helper;
+package com.contact.helper;
 
 public class Message {
 

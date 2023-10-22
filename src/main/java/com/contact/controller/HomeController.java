@@ -1,39 +1,48 @@
-package com.acks.controller;
+package com.contact.controller;
 
-import com.acks.dao.UserRepository;
-import com.acks.helper.Message;
-import com.acks.model.Users;
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.contact.dao.UserRepository;
+import com.contact.helper.Message;
+import com.contact.model.Users;
 
 @Controller
 public class HomeController {
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public HomeController(BCryptPasswordEncoder passwordEncoder, UserRepository userRepository) {
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/test")
     @ResponseBody
     public String test() {
         Users users = new Users();
-        users.setName("Akash Shendge");
-        users.setEmail("akashshendge@gmail.com");
+        users.setName("User One");
+        users.setEmail("userone@gmail.com");
 
         userRepository.save(users);
 
         return "working";
     }
 
-    @RequestMapping("/home")
+    @RequestMapping(value = {"/", "/home"})
     public String homeHandler(Model model) {
         model.addAttribute("title", "Home-Smarter Contact Manager");
         return "home";
@@ -58,7 +67,7 @@ public class HomeController {
         try {
             if (!agreement) {
                 System.out.println("you have not agreed the term and conditions");
-                throw new Exception("you have not agreed the term and conditions");
+                throw new IllegalArgumentException("you have not agreed the term and conditions");
             }
 
             if (result.hasErrors()) {
@@ -75,7 +84,7 @@ public class HomeController {
             users.setImageUrl("default.png");
             users.setPassword(passwordEncoder.encode(users.getPassword()));
 
-            Users save = this.userRepository.save(users);
+            this.userRepository.save(users);
 
             model.addAttribute("users", new Users());
             session.setAttribute("message", new Message("Registered Successfully!!", "alert-success"));
@@ -83,14 +92,11 @@ public class HomeController {
             return "signup";
 
         } catch (Exception e) {
-            // TODO: handle exception
             e.printStackTrace();
             model.addAttribute("users", users);
             session.setAttribute("message", new Message("Something Went Wrong!!" + e.getMessage(), "alert-danger"));
             return "signup";
         }
-
-        //return "signup";
     }
 
     //Login Handler
@@ -99,5 +105,4 @@ public class HomeController {
         model.addAttribute("title", "login");
         return "login";
     }
-
 }

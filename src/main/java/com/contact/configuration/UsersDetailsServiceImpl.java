@@ -1,12 +1,15 @@
-package com.acks.configuration;
+package com.contact.configuration;
 
-import com.acks.dao.UserRepository;
-import com.acks.model.Users;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.contact.dao.UserRepository;
+import com.contact.model.Users;
+import org.springframework.stereotype.Service;
+
+@Service
 public class UsersDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
@@ -23,4 +26,5 @@ public class UsersDetailsServiceImpl implements UserDetailsService {
         CustomUsersDetails customUsersDetails = new CustomUsersDetails(users);
         return customUsersDetails;
     }
+
 }

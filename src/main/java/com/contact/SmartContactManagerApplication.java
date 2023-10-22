@@ -1,4 +1,4 @@
-package com.acks;
+package com.contact;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
