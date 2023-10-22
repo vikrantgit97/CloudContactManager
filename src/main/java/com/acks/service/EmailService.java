@@ -1,4 +1,4 @@
-package com.project.service;
+package com.acks.service;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
@@ -11,10 +11,12 @@ import java.util.Properties;
 public class EmailService {
 
     public boolean sendEmail(String subject, String message, String to) {
-        boolean flag = false;
+        boolean f = false;
+        //rest of the code...
 
-        String from = "examplefrom@gmail.com";
+        String from = "your-mail";
 
+        //variable for gmail
         String host = "smtp.gmail.com";
 
         //get the system properties
@@ -30,16 +32,14 @@ public class EmailService {
         properties.put("mail.smtp.auth", "true");
 
         //step 1: to get the session object...
-        Session session = Session.getInstance(properties,
-                new Authenticator() {
+        Session session = Session.getInstance(properties, new Authenticator() {
 
-                    @Override
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(
-                                "example-userename@gmail.com", "example-password");
-                    }
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("your-mail", "your-password");
+            }
 
-                });
+        });
 
         session.setDebug(true);
 
@@ -50,14 +50,14 @@ public class EmailService {
             //from email
             mimeMessage.setFrom(from);
 
-            //adding recipient to message
+            //addinng recipient to message
             mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
 
             //adding subject to message
             mimeMessage.setSubject(subject);
 
             //adding text to message
-            // mimeMessage.setText(message);
+            //mimeMessage.setText(message);
             mimeMessage.setContent(message, "text/html");
 
             //send
@@ -66,12 +66,13 @@ public class EmailService {
             Transport.send(mimeMessage);
 
             System.out.println("Send Success.......");
-            flag = true;
+            f = true;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return flag;
+
+        return f;
     }
 
 }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{normal/base::layout(~{::section})}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="normal/base::layout(~{::section})">
 <head>
 	<meta charset="UTF-8" />
 	<title>Show Contacts</title>
@@ -37,7 +37,7 @@
 					    <tr th:each="c : ${contact}">
 					      <th scope="row" th:text="'SCM2022'+${c.cId}">1</th>
 					      <td>
-					      <img class="my_profile_picture" th:src="@{'/img/'+${c.image}}" alt="profile photo" />
+					      <img class="my_profile_picture" th:src="@{'/image/'+${c.image}}" alt="profile photo" />
 					      <span th:text="${c.name}"></span>
 					      </td>
 					      <td>

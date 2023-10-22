@@ -1,34 +1,34 @@
-package com.project.config;
+package com.acks.configuration;
 
-import com.project.entities.User;
+import com.acks.model.Users;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class CustomUserDetails implements UserDetails {
-    private User user;
+public class CustomUsersDetails implements UserDetails {
 
-    public CustomUserDetails(User user) {
-        this.user = user;
-    }
+    private Users users;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(user.getRole());
-        return List.of(simpleGrantedAuthority);
+        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(users.getRole());
+        List<SimpleGrantedAuthority> list = new ArrayList<>();
+        list.add(simpleGrantedAuthority);
+        return list;
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return users.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return users.getEmail();
     }
 
     @Override
@@ -49,5 +49,10 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public CustomUsersDetails(Users users) {
+        super();
+        this.users = users;
     }
 }

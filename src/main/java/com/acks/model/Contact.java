@@ -1,38 +1,38 @@
-package com.project.entities;
+package com.acks.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.util.Objects;
-
 @Entity
-@Table(name = "contact")
 public class Contact {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int cId;
-
     private String name;
-
     private String secondName;
-
     private String work;
-
     private String email;
-
     private String phone;
-
     private String image;
-
-    @Column(length = 1000)
+    @Column(length = 5000)
     private String description;
 
     @ManyToOne
     @JsonIgnore
-    private User user;
+    private Users users;
 
     public Contact() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+    public Users getUsers() {
+        return users;
+    }
+
+    public void setUsers(Users users) {
+        this.users = users;
     }
 
     public int getcId() {
@@ -99,24 +99,9 @@ public class Contact {
         this.description = description;
     }
 
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Contact contact = (Contact) o;
-        return cId == contact.cId && Objects.equals(name, contact.name) && Objects.equals(secondName, contact.secondName) && Objects.equals(work, contact.work) && Objects.equals(email, contact.email) && Objects.equals(phone, contact.phone) && Objects.equals(image, contact.image) && Objects.equals(description, contact.description) && Objects.equals(user, contact.user);
+    public boolean equals(Object obj) {
+        return this.cId == ((Contact) obj).getcId();
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(cId, name, secondName, work, email, phone, image, description, user);
-    }
 }

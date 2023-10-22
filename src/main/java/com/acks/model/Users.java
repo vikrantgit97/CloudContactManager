@@ -1,58 +1,43 @@
-package com.project.entities;
+package com.acks.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-
 @Entity
-public class User {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
     @NotBlank(message = "Name can not be pass empty")
-    @Size(min = 2,max = 20,message = "size between 2 to 20 alphabets")
+    @Size(min = 2, max = 20, message = "size between 2 to 20 alphabets")
     //@Pattern(regexp = "regex = /^[a-z\\s]{0,255}$/i", message = "invalid name")
     private String name;
 
     @Column(unique = true)
-    @Email
     private String email;
-
     private String password;
-
     private String role;
-
     private boolean enabled;
-
     private String imageUrl;
-
     @Column(length = 500)
     private String about;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user", orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "users", orphanRemoval = true)
     private List<Contact> contacts = new ArrayList<>();
 
-    public User() {
+    public Users() {
         super();
     }
 
     @Override
     public String toString() {
-        return "User [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", role=" + role
+        return "Users [id=" + id + ", name=" + name + ", email=" + email + ", password=" + password + ", role=" + role
                 + ", enabled=" + enabled + ", imageUrl=" + imageUrl + ", about=" + about + ", contacts=" + contacts
                 + "]";
     }

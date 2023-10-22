@@ -1,31 +1,17 @@
-package com.project.controller;
+package com.acks.controller;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
-
-import com.project.entities.Contact;
-import com.project.entities.MyOrder;
-import com.project.entities.User;
-import com.project.helper.MyMessage;
-import com.project.repo.ContactRepo;
-import com.project.repo.MyOrderRepository;
-import com.project.repo.UserRepo;
-
+import com.acks.dao.ContactRepository;
+import com.acks.dao.MyOrderRepository;
+import com.acks.dao.UserRepository;
+import com.acks.helper.Message;
+import com.acks.model.Contact;
+import com.acks.model.MyOrder;
+import com.acks.model.Users;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
-
+import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -39,35 +25,42 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/user")
 public class UserController {
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private final UserRepo userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    private final ContactRepo contactRepository;
+    @Autowired
+    private ContactRepository contactRepository;
 
-    private final MyOrderRepository myOrderRepository;
-
-    public UserController(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepo userRepository, ContactRepo contactRepository, MyOrderRepository myOrderRepository) {
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.userRepository = userRepository;
-        this.contactRepository = contactRepository;
-        this.myOrderRepository = myOrderRepository;
-    }
+    @Autowired
+    private MyOrderRepository myOrderRepository;
 
     @ModelAttribute
     public void addCommonData(Model model, Principal principal) {
         String userName = principal.getName();
         System.out.println("UserName = " + userName);
 
-        User user = this.userRepository.getUserByUserName(userName);
-        System.out.println("User = " + user);
+        Users users = this.userRepository.getUsersByUserName(userName);
+        System.out.println("User = " + users);
 
-        model.addAttribute("user", user);
+        model.addAttribute("users", users);
     }
 
     @RequestMapping("/index")
@@ -90,12 +83,12 @@ public class UserController {
                                         @RequestParam("profileImages") MultipartFile file, Principal principal, HttpSession session) {
         try {
             String name = principal.getName();
-            User users = this.userRepository.getUserByUserName(name);
+            Users users = this.userRepository.getUsersByUserName(name);
 
-            contact.setUser(users);
+            contact.setUsers(users);
             System.out.println("------" + users);
             if (file.isEmpty()) {
-                // if file is empty then try our MyMessage
+                // if file is empty then try our message
                 contact.setImage("contact.png");
             } else {
                 // file the file to folder and update the name to contact
@@ -113,15 +106,15 @@ public class UserController {
             System.out.println("Contact = " + contact);
             System.out.println("Add to data base");
 
-            session.setAttribute("Message", new MyMessage("Your contact is added !!", "success"));
+            session.setAttribute("message", new Message("Your contact is added !!", "success"));
 
-            System.out.println(session.getAttribute("MyMessage"));
+            System.out.println(session.getAttribute("message"));
         } catch (Exception e) {
             // TODO: handle exception
             System.out.println(e.getMessage());
             e.printStackTrace();
 
-            session.setAttribute("Message", new MyMessage("Something went to wrong!! Try again...", "danger"));
+            session.setAttribute("message", new Message("Something went to wrong!! Try again...", "danger"));
         }
 
         return "normal/add_contact_form";
@@ -133,13 +126,13 @@ public class UserController {
     @GetMapping("/show-contacts/{page}")
     public String showContactHandler(@PathVariable("page") Integer page, Model model, Principal principal) {
         String userName = principal.getName();
-        User users = this.userRepository.getUserByUserName(userName);
+        Users users = this.userRepository.getUsersByUserName(userName);
 
         // currentPage - page
         // Contact Per page - 5
         Pageable pageable = PageRequest.of(page, 3);
 
-        Page<Contact> contact = this.contactRepository.getContactsByUser(users.getId(), pageable);
+        Page<Contact> contact = this.contactRepository.findContactByUser(users.getId(), pageable);
 
         model.addAttribute("contact", contact);
         model.addAttribute("currentPage", page);
@@ -162,9 +155,9 @@ public class UserController {
         }
 
         String userName = principal.getName();
-        User users = this.userRepository.getUserByUserName(userName);
+        Users users = this.userRepository.getUsersByUserName(userName);
 
-        if (users.getId() == contact.getUser().getId()) {
+        if (users.getId() == contact.getUsers().getId()) {
             model.addAttribute("contact", contact);
             model.addAttribute("title", contact.getName());
         }
@@ -180,7 +173,7 @@ public class UserController {
         Contact contact = this.contactRepository.findById(cId).get();
 
         String userName = principal.getName();
-        User users = this.userRepository.getUserByUserName(userName);
+        Users users = this.userRepository.getUsersByUserName(userName);
 
 //		if(users.getId()==contact.getUsers().getId())
 //		{
@@ -190,7 +183,7 @@ public class UserController {
 
         this.userRepository.save(users);
 
-        session.setAttribute("Message", new MyMessage("Contact deleted Successfully...", "success"));
+        session.setAttribute("message", new Message("Contact deleted Successfully...", "success"));
 //		}
 
         return "redirect:/user/show-contacts/0";
@@ -236,11 +229,11 @@ public class UserController {
                 contact.setImage(oldContactDetail.getImage());
             }
 
-            User users = this.userRepository.getUserByUserName(principal.getName());
-            contact.setUser(users);
+            Users users = this.userRepository.getUsersByUserName(principal.getName());
+            contact.setUsers(users);
             this.contactRepository.save(contact);
 
-            session.setAttribute("Message", new MyMessage("Your contact is updated...", "success"));
+            session.setAttribute("message", new Message("Your contact is updated...", "success"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -273,7 +266,7 @@ public class UserController {
         System.out.println("NEW PASSWORD : " + newPassword);
 
         String userName = principal.getName();
-        User currentUser = this.userRepository.getUserByUserName(userName);
+        Users currentUser = this.userRepository.getUsersByUserName(userName);
         System.out.println(currentUser.getPassword());
 
         if (this.bCryptPasswordEncoder.matches(oldPassword, currentUser.getPassword())) {
@@ -281,10 +274,10 @@ public class UserController {
             currentUser.setPassword(this.bCryptPasswordEncoder.encode(newPassword));
             this.userRepository.save(currentUser);
 
-            session.setAttribute("Message", new MyMessage("Your Password is changed successfully...", "success"));
+            session.setAttribute("message", new Message("Your Password is changed successfully...", "success"));
         } else {
             // error
-            session.setAttribute("Message", new MyMessage("Please enter your correct old password !!", "danger"));
+            session.setAttribute("message", new Message("Please enter your correct old password !!", "danger"));
             return "redirect:/user/settings";
         }
 
@@ -307,6 +300,7 @@ public class UserController {
         ob.put("receipt", "txn_235425");
 
         // creating new order
+
         Order order = client.orders.create(ob);
         System.out.println(order);
 
@@ -316,7 +310,7 @@ public class UserController {
         myOrder.setOrderId(order.get("id"));
         myOrder.setPaymentId(null);
         myOrder.setStatus("created");
-        myOrder.setUser(this.userRepository.getUserByUserName(principal.getName()));
+        myOrder.setUsers(this.userRepository.getUsersByUserName(principal.getName()));
         myOrder.setReceipt(order.get("receipt"));
 
         this.myOrderRepository.save(myOrder);
