@@ -7,12 +7,12 @@ import jakarta.persistence.*;
 public class MyOrder {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long myOrderId;
 	
 	private String orderId;
 	
-	private String amount;
+	private Integer amount;
 	
 	private String receipt;
 	
@@ -39,11 +39,11 @@ public class MyOrder {
 		this.orderId = orderId;
 	}
 
-	public String getAmount() {
+	public Integer getAmount() {
 		return amount;
 	}
 
-	public void setAmount(String amount) {
+	public void setAmount(Integer amount) {
 		this.amount = amount;
 	}
 
@@ -82,7 +82,7 @@ public class MyOrder {
 	public MyOrder() {
 	}
 
-	public MyOrder(Long myOrderId, String orderId, String amount, String receipt, String status, User user, String paymentId) {
+	public MyOrder(Long myOrderId, String orderId, Integer amount, String receipt, String status, User user, String paymentId) {
 		this.myOrderId = myOrderId;
 		this.orderId = orderId;
 		this.amount = amount;

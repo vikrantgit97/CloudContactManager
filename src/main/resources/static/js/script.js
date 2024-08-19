@@ -22,7 +22,7 @@ const search = () => {
 
     let query = $("#search-input").val();
     console.log(query);
-    if(query == '')
+    if(query === '')
     {
         $(".search-result").hide();
     }
@@ -64,7 +64,7 @@ const paymentStart = () => {
     var amount = $("#payment_field").val();
     console.log(amount);
 
-    if(amount=="" || amount==null)
+    if(amount==="" || amount==null)
     {
         //alert("amount is required !!");
         swal("Failed !!", "amount is required !!", "error");
@@ -83,7 +83,7 @@ const paymentStart = () => {
             success:function(response){
                 //invoked when success
                 console.log(response);
-                if(response.status=="created") {
+                if(response.status==="created") {
                     //open payment form
                     let options = {
                         key:'rzp_test_Iw3y0w0aj23wxf',

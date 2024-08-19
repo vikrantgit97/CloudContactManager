@@ -17,7 +17,7 @@ import jakarta.transaction.Transactional;
 import com.project.entities.Contact;
 import com.project.entities.MyOrder;
 import com.project.entities.User;
-import com.project.helper.MyMessage;
+import com.project.helper.Message;
 import com.project.repo.ContactRepo;
 import com.project.repo.MyOrderRepository;
 import com.project.repo.UserRepo;
@@ -113,7 +113,7 @@ public class UserController {
             System.out.println("Contact = " + contact);
             System.out.println("Add to data base");
 
-            session.setAttribute("Message", new MyMessage("Your contact is added !!", "success"));
+            session.setAttribute("Message", new Message("Your contact is added !!", "success"));
 
             System.out.println(session.getAttribute("MyMessage"));
         } catch (Exception e) {
@@ -121,7 +121,7 @@ public class UserController {
             System.out.println(e.getMessage());
             e.printStackTrace();
 
-            session.setAttribute("Message", new MyMessage("Something went to wrong!! Try again...", "danger"));
+            session.setAttribute("Message", new Message("Something went to wrong!! Try again...", "danger"));
         }
 
         return "normal/add_contact_form";
@@ -164,6 +164,7 @@ public class UserController {
         String userName = principal.getName();
         User users = this.userRepository.getUserByUserName(userName);
 
+        assert contact != null;
         if (users.getId() == contact.getUser().getId()) {
             model.addAttribute("contact", contact);
             model.addAttribute("title", contact.getName());
@@ -190,7 +191,7 @@ public class UserController {
 
         this.userRepository.save(users);
 
-        session.setAttribute("Message", new MyMessage("Contact deleted Successfully...", "success"));
+        session.setAttribute("Message", new Message("Contact deleted Successfully...", "success"));
 //		}
 
         return "redirect:/user/show-contacts/0";
@@ -240,7 +241,7 @@ public class UserController {
             contact.setUser(users);
             this.contactRepository.save(contact);
 
-            session.setAttribute("Message", new MyMessage("Your contact is updated...", "success"));
+            session.setAttribute("Message", new Message("Your contact is updated...", "success"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -281,10 +282,10 @@ public class UserController {
             currentUser.setPassword(this.bCryptPasswordEncoder.encode(newPassword));
             this.userRepository.save(currentUser);
 
-            session.setAttribute("Message", new MyMessage("Your Password is changed successfully...", "success"));
+            session.setAttribute("Message", new Message("Your Password is changed successfully...", "success"));
         } else {
             // error
-            session.setAttribute("Message", new MyMessage("Please enter your correct old password !!", "danger"));
+            session.setAttribute("Message", new Message("Please enter your correct old password !!", "danger"));
             return "redirect:/user/settings";
         }
 
@@ -297,7 +298,7 @@ public class UserController {
     public String createOrder(@RequestBody Map<String, Object> data, Principal principal) throws RazorpayException {
         System.out.println(data);
 
-        int amt = Integer.parseInt(data.get("amount").toString());
+        int amt = Integer.parseInt((String) data.get("amount"));
 
         RazorpayClient client = new RazorpayClient("rzp_test_Iw3y0w0aj23wxf", "MB77O4XNuccsalnLCq5g0A4t");
 
@@ -312,13 +313,14 @@ public class UserController {
 
         // save the order in database
         MyOrder myOrder = new MyOrder();
-        myOrder.setAmount(order.get("amount") + "");
+        myOrder.setAmount(order.get("amount"));
         myOrder.setOrderId(order.get("id"));
-        myOrder.setPaymentId(null);
+        myOrder.setPaymentId("11");
         myOrder.setStatus("created");
         myOrder.setUser(this.userRepository.getUserByUserName(principal.getName()));
         myOrder.setReceipt(order.get("receipt"));
 
+        System.out.println("order " + myOrder);
         this.myOrderRepository.save(myOrder);
 
         // if you want you can save this to your data...

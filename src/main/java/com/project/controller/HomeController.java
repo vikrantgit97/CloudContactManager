@@ -1,8 +1,9 @@
 package com.project.controller;
 
 import com.project.entities.User;
-import com.project.helper.MyMessage;
+import com.project.helper.Message;
 import com.project.repo.UserRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+@Slf4j
 @Controller
 public class HomeController {
 
@@ -48,11 +50,11 @@ public class HomeController {
     boolean agreement, Model model, HttpSession session) {
         try {
             if (!agreement) {
-                System.out.println("you have not agreed the terms and condition ");
+                log.info("you have not agreed the terms and condition ");
                 throw new IllegalArgumentException("you have not agreed the terms and condition");
             }
             if (bindingResult.hasErrors()) {
-                System.out.println("ERROR " + bindingResult);
+                log.error("bindingResult error {}" ,bindingResult);
                 model.addAttribute("user", user);
                 return "signup";
             }
@@ -61,20 +63,21 @@ public class HomeController {
             user.setImageUrl("default.png");
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
-            System.out.println("Agreement: " + agreement + "  USER :" + user);
+            log.info("Agreement: {} USER : {}", agreement , user);
             User result = userRepo.save(user);
             // after successfully registered,  form data must return empty
             model.addAttribute("user", new User());
-            session.setAttribute("message", new MyMessage("Successfully Registered", "alert-success"));
+            session.setAttribute("message", new Message("Successfully Registered", "alert-success"));
 
+            return "redirect:/signin?change=Successfully Registered...please login to continue";
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("registration error {}" ,e.getMessage());
             model.addAttribute("user", user);
-            session.setAttribute("message", new MyMessage("Something went wrong " + e.getMessage(), "alert-danger"));
+            session.setAttribute("message", new Message("Something went wrong " + e.getMessage(), "alert-danger"));
             return "signup";
         }
 
-        return "signup";
+
     }
 
     //handler for custom login

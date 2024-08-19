@@ -26,81 +26,69 @@
                     <form action="" th:action="@{/register}" method="post" th:object="${user}">
 
 
-                        <label for="name_field">Your Name</label>
 
-                        <div class="form-group">
-                            <input
-                                    name="name"
-                                    type="text"
-                                    class="form-control"
-                                    aria-describedby="emailHelp"
-                                    placeholder="Enter here"
-
-                                    th:classappend="${#fields.hasErrors('name')?'is-invalid':''}"
+                        <!-- Name field -->
+                        <div class="mb-3">
+                            <label for="name_field" class="form-label">Your Name </label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Enter here"
+                                   id="name_field" aria-describedby="emailHelp"
+                                   required
+                                   th:value="${user.name}"
+                                   name="name"
+                                   th:classappend="${#fields.hasErrors('name') ?'is-invalid': ''}"
                             />
-                            <div th:each="e: ${#fields.errors('name') } " th:text="${e}" id="validationServer03Feedback"
-                                 class="invalid-feedback">
+
+                            <div class="invalid-feedback" th:each="e : ${#fields.errors('name')}" th:text="${e}">
                             </div>
                         </div>
 
 
-                        <label for="name_field">Your Email</label>
 
+                        <!--Email field  -->
+                        <div class="mb-3">
+                            <label for="email_field" class="form-label">Your Email address</label>
+                            <input type="email"
+                                   name="email"
+                                   class="form-control"
+                                   placeholder="Enter here"
+                                   id="email_field" aria-describedby="emailHelp"
+                                   required="required"
+                                   th:value="${user.email}"
+                            >
+                        </div>
+
+                        <!-- Password field -->
+                        <div class="mb-3">
+                            <label for="password_field" class="form-label">Password</label>
+                            <input type="password" class="form-control"
+                                   name="password"
+                                   placeholder="Enter here"
+                                   required="required"
+                                   id="password_field">
+                        </div>
+
+                        <!-- User about field -->
                         <div class="form-group">
-                            <input
-                                    name="email"
-                                    type="text"
-                                    class="form-control"
-                                    aria-describedby="emailHelp"
-                                    placeholder="Enter here"
-
-
-                                    th:classappend="${#fields.hasErrors('email')?'is-invalid':''}"
-
-
-                            />
-                            <div th:each="e: ${#fields.errors('email') } " th:text="${e}"
-                                 id="validationServer03Feedback" class="invalid-feedback">
-                            </div>
+                            <label for="password_field" class="form-label">Description</label>
+                            <textarea name="about" id="" class="form-control"
+                                      placeholder="Enter something about yourself"
+                                      rows="8" th:text="${user.about}" ></textarea>
                         </div>
 
-                        <label for="name_field">Your password</label>
-                        <div class="form-group">
-                            <input
-                                    name="password"
-                                    type="password"
-                                    class="form-control"
-                                    aria-describedby="emailHelp"
-                                    placeholder="Enter here"
-                                    th:classappend="${#fields.hasErrors('password')?'is-invalid':''}"
-                            />
-                            <div th:each="e: ${#fields.errors('password') } " th:text="${e}"
-                                 id="validationServer03Feedback" class="invalid-feedback">
-                            </div>
-                        </div>
-
-                        <!--   user about field -->
-                        <div class="form-group">
-<textarea name="about" th:classappend="${#fields.hasErrors('email')?'is-invalid':''}"
-          placeholder="Enter Something yourself" rows="10" class="form-control"></textarea>
-                            <div th:each="e: ${#fields.errors('email') } " th:text="${e}"
-                                 id="validationServer03Feedback" class="invalid-feedback">
-                            </div>
-                        </div>
 
                         <div class="form-group form-check text-center">
+                            <label for="agreement">Accept term and condition</label>
                             <input type="checkbox"
                                    name="agreement"
                                    class="form-check-input"
                                    id="agreement"
-
                             />
-                            <label for="agreement">Accept term and condition</label>
-
                         </div>
 
                         <div class="container text-center">
-                            <button type="submit" class="btn bg-primary text-white">
+                            <button type="submit" class="btn btn-primary text-white">
                                 Submit
                             </button>
                             <button type="reset" class="btn btn-warning">

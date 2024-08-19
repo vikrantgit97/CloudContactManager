@@ -14,7 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class MyConfig {
+public class Config {
 
     @Bean
     public UserDetailsService getUserDetailsService() {
@@ -48,7 +48,7 @@ public class MyConfig {
                 .authorizeRequests(req ->
                         req
                                 .requestMatchers("/admin/**").hasAnyRole("ADMIN")
-                                .requestMatchers("/user/**").hasAnyAuthority("USER")
+                                .requestMatchers("/user/**").hasAnyRole("USER")
                                 .requestMatchers("/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
