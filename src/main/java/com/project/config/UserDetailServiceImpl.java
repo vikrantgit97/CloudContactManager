@@ -10,19 +10,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserDetailServiceImpl implements UserDetailsService {
-    //fetching from database
 
     @Autowired
-    private UserRepo userRepo;
+    private  UserRepo userRepo;
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.getUserByUserName(username);
         if (username == null) {
-            throw new UsernameNotFoundException("Could not found User "+ username);
+            throw new UsernameNotFoundException("User not found "+ username);
         }
 
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
-        return customUserDetails;
+        return new CustomUserDetails(user);
     }
 }

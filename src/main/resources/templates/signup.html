@@ -26,7 +26,6 @@
                     <form action="" th:action="@{/register}" method="post" th:object="${user}">
 
 
-
                         <!-- Name field -->
                         <div class="mb-3">
                             <label for="name_field" class="form-label">Your Name </label>
@@ -43,7 +42,6 @@
                             <div class="invalid-feedback" th:each="e : ${#fields.errors('name')}" th:text="${e}">
                             </div>
                         </div>
-
 
 
                         <!--Email field  -->
@@ -73,20 +71,24 @@
                         <div class="form-group">
                             <label for="password_field" class="form-label">Description</label>
                             <textarea name="about" id="" class="form-control"
-                                      placeholder="Enter something about yourself"
-                                      rows="8" th:text="${user.about}" ></textarea>
+                                                         placeholder="Enter something about yourself"
+                                                         rows="8" th:text="${user.about}"></textarea>
                         </div>
 
 
                         <div class="form-group form-check text-center">
-                            <label for="agreement">Accept term and condition</label>
                             <input type="checkbox"
                                    name="agreement"
                                    class="form-check-input"
                                    id="agreement"
+                                   value="true"
                             />
-                        </div>
+                            <!--th:field="${yourFormObject.agreement}"            place inside input tag-->
 
+                            <label class="form-check-label" for="agreement">
+                                Accept terms and conditions
+                            </label>
+                        </div>
                         <div class="container text-center">
                             <button type="submit" class="btn btn-primary text-white">
                                 Submit

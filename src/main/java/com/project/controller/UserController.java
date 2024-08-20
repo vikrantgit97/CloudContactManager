@@ -12,22 +12,21 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 
 import com.project.entities.Contact;
 import com.project.entities.MyOrder;
 import com.project.entities.User;
 import com.project.helper.Message;
-import com.project.repo.ContactRepo;
+import com.project.repo.ContactRepository;
 import com.project.repo.MyOrderRepository;
-import com.project.repo.UserRepo;
+import com.project.repo.UserRepository;
 
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,24 +34,25 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
+@Slf4j
 @Controller
 @RequestMapping("/user")
 public class UserController {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private final UserRepo userRepository;
+    private final UserRepository userRepository;
 
-    private final ContactRepo contactRepository;
+    private final ContactRepository contactRepository;
 
     private final MyOrderRepository myOrderRepository;
 
-    public UserController(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepo userRepository, ContactRepo contactRepository, MyOrderRepository myOrderRepository) {
+    public UserController(BCryptPasswordEncoder bCryptPasswordEncoder, UserRepository userRepository, ContactRepository contactRepository, MyOrderRepository myOrderRepository) {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.userRepository = userRepository;
         this.contactRepository = contactRepository;
@@ -62,20 +62,19 @@ public class UserController {
     @ModelAttribute
     public void addCommonData(Model model, Principal principal) {
         String userName = principal.getName();
-        System.out.println("UserName = " + userName);
 
         User user = this.userRepository.getUserByUserName(userName);
-        System.out.println("User = " + user);
+        log.info("User {} ", user);
 
         model.addAttribute("user", user);
     }
 
     @RequestMapping("/index")
-    public String dashboardHandler(Model model, Principal principal) {
+    public String dashboardHandler() {
         return "normal/user_dashboard";
     }
 
-    // Add Contact Handler
+    // Add Contacts
     @GetMapping("add-contact")
     public String openAddContactHandler(Model model) {
         model.addAttribute("title", "Add Contact");
@@ -84,18 +83,16 @@ public class UserController {
         return "normal/add_contact_form";
     }
 
-    // Processing Add Contact Handler
     @PostMapping("/process-contact")
-    public String processConatctHandler(@ModelAttribute("contact") Contact contact,
+    public String processContactHandler(@ModelAttribute("contact") Contact contact,
                                         @RequestParam("profileImages") MultipartFile file, Principal principal, HttpSession session) {
         try {
             String name = principal.getName();
             User users = this.userRepository.getUserByUserName(name);
 
             contact.setUser(users);
-            System.out.println("------" + users);
+            log.info("users {}", users);
             if (file.isEmpty()) {
-                // if file is empty then try our MyMessage
                 contact.setImage("contact.png");
             } else {
                 // file the file to folder and update the name to contact
@@ -110,16 +107,10 @@ public class UserController {
             users.getContacts().add(contact);
             this.userRepository.save(users);
 
-            System.out.println("Contact = " + contact);
-            System.out.println("Add to data base");
-
             session.setAttribute("Message", new Message("Your contact is added !!", "success"));
 
-            System.out.println(session.getAttribute("MyMessage"));
         } catch (Exception e) {
-            // TODO: handle exception
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage());
 
             session.setAttribute("Message", new Message("Something went to wrong!! Try again...", "danger"));
         }
@@ -127,16 +118,12 @@ public class UserController {
         return "normal/add_contact_form";
     }
 
-    // Show Contact Handler
-    // per page = 5[n]
-    // current page = 0 [page]
+    // /page = 5 , start page = 0
     @GetMapping("/show-contacts/{page}")
     public String showContactHandler(@PathVariable("page") Integer page, Model model, Principal principal) {
         String userName = principal.getName();
         User users = this.userRepository.getUserByUserName(userName);
 
-        // currentPage - page
-        // Contact Per page - 5
         Pageable pageable = PageRequest.of(page, 3);
 
         Page<Contact> contact = this.contactRepository.getContactsByUser(users.getId(), pageable);
@@ -148,7 +135,7 @@ public class UserController {
         return "normal/show_contacts";
     }
 
-    // Showing particular contact details
+    // Show contact details
     @GetMapping("/{cId}/contact")
     public String showContactDetailHandler(@PathVariable("cId") Integer cId, Model model, Principal principal) {
         List<Contact> findAll = this.contactRepository.findAll();
@@ -173,32 +160,24 @@ public class UserController {
         return "normal/contact_detail";
     }
 
-    // Delete Contact Handler
 
-    @GetMapping("/delete/{cId}")
     @Transactional
+    @GetMapping("/delete/{cId}")
     public String deleteContactHandler(@PathVariable("cId") Integer cId, Principal principal, HttpSession session) {
         Contact contact = this.contactRepository.findById(cId).get();
 
         String userName = principal.getName();
         User users = this.userRepository.getUserByUserName(userName);
 
-//		if(users.getId()==contact.getUsers().getId())
-//		{
-//			contact.setUsers(null);
-//			this.contactRepository.delete(contact);
         users.getContacts().remove(contact);
 
         this.userRepository.save(users);
 
         session.setAttribute("Message", new Message("Contact deleted Successfully...", "success"));
-//		}
 
         return "redirect:/user/show-contacts/0";
-        // return "deletehandler";
     }
 
-    // Open update form handler
     @PostMapping("/update-contact/{cId}")
     public String updateform(@PathVariable("cId") Integer cId, Model model) {
         model.addAttribute("title", "Update contact");
@@ -218,7 +197,6 @@ public class UserController {
             Contact oldContactDetail = this.contactRepository.findById(contact.getcId()).get();
 
             if (!file.isEmpty()) {
-                // file work...
                 // rewrite
 
                 // Delete Old Photo
@@ -226,7 +204,7 @@ public class UserController {
                 File file1 = new File(deletefile, oldContactDetail.getImage());
                 file1.delete();
 
-                // Update Old Photo
+                // Update with New Photo
                 File savefile = new ClassPathResource("static/image").getFile();
 
                 Path path = Paths.get(savefile.getAbsolutePath() + File.separator + file.getOriginalFilename());
@@ -244,16 +222,13 @@ public class UserController {
             session.setAttribute("Message", new Message("Your contact is updated...", "success"));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
-        System.out.println("CONTACT NAME = " + contact.getName());
-        System.out.println("CONTACT ID = " + contact.getcId());
 
         return "redirect:/user/" + contact.getcId() + "/contact";
     }
 
-    // Profile Handler
     @GetMapping("/profile")
     public String profileHandler(Model model) {
         model.addAttribute("title", "Profile");
@@ -266,7 +241,6 @@ public class UserController {
         return "normal/setting";
     }
 
-    // Change Password..handler
     @PostMapping("/change-password")
     public String changePasswordHandler(@RequestParam("oldPassword") String oldPassword,
                                         @RequestParam("newPassword") String newPassword, Principal principal, HttpSession session) {
@@ -284,7 +258,6 @@ public class UserController {
 
             session.setAttribute("Message", new Message("Your Password is changed successfully...", "success"));
         } else {
-            // error
             session.setAttribute("Message", new Message("Please enter your correct old password !!", "danger"));
             return "redirect:/user/settings";
         }
@@ -296,7 +269,6 @@ public class UserController {
     @PostMapping("/create_order")
     @ResponseBody
     public String createOrder(@RequestBody Map<String, Object> data, Principal principal) throws RazorpayException {
-        System.out.println(data);
 
         int amt = Integer.parseInt((String) data.get("amount"));
 
@@ -309,7 +281,7 @@ public class UserController {
 
         // creating new order
         Order order = client.orders.create(ob);
-        System.out.println(order);
+        log.info(order.toString());
 
         // save the order in database
         MyOrder myOrder = new MyOrder();
@@ -320,7 +292,7 @@ public class UserController {
         myOrder.setUser(this.userRepository.getUserByUserName(principal.getName()));
         myOrder.setReceipt(order.get("receipt"));
 
-        System.out.println("order " + myOrder);
+        log.info("order {}", myOrder);
         this.myOrderRepository.save(myOrder);
 
         // if you want you can save this to your data...
@@ -335,7 +307,6 @@ public class UserController {
 
         this.myOrderRepository.save(myOrder);
 
-        System.out.println(data);
         Map<Object, Object> map = new HashMap<>();
         map.put("msg", "updated");
 

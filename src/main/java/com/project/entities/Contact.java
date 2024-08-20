@@ -1,6 +1,5 @@
 package com.project.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -29,7 +28,6 @@ public class Contact {
     private String description;
 
     @ManyToOne
-    @JsonIgnore
     private User user;
 
     public Contact() {
