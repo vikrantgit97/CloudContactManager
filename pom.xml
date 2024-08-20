@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.project</groupId>
-    <artifactId>SmartContactManager</artifactId>
+    <artifactId>ContactManager</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>SmartContactManager</name>
     <description>Demo project for Spring Boot</description>
@@ -25,11 +25,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
-        <!--<dependency>
-            <groupId>jakvax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-        </dependency>-->
+
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>

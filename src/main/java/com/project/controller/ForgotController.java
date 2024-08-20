@@ -1,9 +1,10 @@
 package com.project.controller;
 
 import com.project.entities.User;
-import com.project.repo.UserRepo;
+import com.project.repo.UserRepository;
 import com.project.service.EmailService;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,16 +13,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Random;
 
+@Slf4j
 @Controller
 public class ForgotController {
 
-	private EmailService emailService;
+	private final EmailService emailService;
 	
-	private UserRepo userRepository;
+	private final UserRepository userRepository;
 	
-	private BCryptPasswordEncoder bCryptPasswordEncoder;
+	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	public ForgotController(EmailService emailService, UserRepo userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+	public ForgotController(EmailService emailService, UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
 		this.emailService = emailService;
 		this.userRepository = userRepository;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -29,7 +31,7 @@ public class ForgotController {
 
 	Random random = new Random(1000);
 
-	//Email id form open handler
+	//Email id form handler
 	@RequestMapping("/forgot")
 	public String openEmailForm()
 	{
@@ -39,25 +41,20 @@ public class ForgotController {
 	@PostMapping("/send-otp")
 	public String openSendOtpForm(@RequestParam("email") String email, HttpSession session)
 	{
-		System.out.println("EMAIL : "+email);
-		
+
 		int otp = random.nextInt(9999);
-		System.out.println("OTP : "+otp);
-		
-		//write code for send OTP to email...
-		
-		String subject = "OTP From SCM";
-		String message = ""
-				+ "<div style='border:1px solid #2e2e2e; padding:20px'>"
+		log.info("OTP : {}", otp);
+
+		String subject = "OTP From Cloud Contact Manager";
+		String message = "<div style='border:1px solid #2e2e2e; padding:20px'>"
 				+ "<h1>"
 				+ "OTP is : "
 				+ "<b>"+otp
 				+ "</b>"
 				+ "</h1>"
 				+ "</div>";
-		String to = email;
-		
-		boolean flag = this.emailService.sendEmail(subject, message, to);
+
+        boolean flag = this.emailService.sendEmail(subject, message, email);
 		
 		if(flag)
 		{
@@ -90,10 +87,6 @@ public class ForgotController {
 				
 				return "forgot_email_form";
 			}
-			else {
-				//send change password form
-			}
-			
 			return "password_change_form";
 		}
 		else {
@@ -104,11 +97,11 @@ public class ForgotController {
 	
 	//Change Password
 	@PostMapping("/change-password")
-	public String changePassword(@RequestParam("newpassword") String newpassword, HttpSession session)
+	public String changePassword(@RequestParam("newPassword") String newPassword, HttpSession session)
 	{
 		String email =(String) session.getAttribute("email");
 		User user = this.userRepository.getUserByUserName(email);
-		user.setPassword(this.bCryptPasswordEncoder.encode(newpassword));
+		user.setPassword(this.bCryptPasswordEncoder.encode(newPassword));
 		this.userRepository.save(user);
 		
 		return "redirect:/signin?change=password changed successfully...";

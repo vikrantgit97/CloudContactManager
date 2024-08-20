@@ -11,11 +11,11 @@ import jakarta.websocket.server.PathParam;
 import java.util.List;
 
 /**
- * @author Vikrant on 10-10-2023
+ * @author Vikrant on 20-08-2024
  * @version V1.0
- * @Project SmartContactManager
+ * @Project CloudContactManager
  */
-public interface ContactRepo extends JpaRepository <Contact, Integer> {
+public interface ContactRepository extends JpaRepository <Contact, Integer> {
 
     @Query("from Contact as c WHERE c.user.id= :userId")
     Page<Contact> getContactsByUser(@PathParam("userId") int userId, Pageable pageable);

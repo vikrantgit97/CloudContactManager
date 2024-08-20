@@ -19,11 +19,7 @@ public class EmailService {
 
         //get the system properties
         Properties properties = System.getProperties();
-        System.out.println("Properties : " + properties);
 
-        //Setting important information to properties object
-
-        //host set
         properties.put("mail.smtp.host", host);
         properties.put("mail.smtp.port", "465");
         properties.put("mail.smtp.ssl.enable", "true");
@@ -50,26 +46,20 @@ public class EmailService {
             //from email
             mimeMessage.setFrom(from);
 
-            //adding recipient to message
             mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
 
-            //adding subject to message
             mimeMessage.setSubject(subject);
 
-            //adding text to message
             // mimeMessage.setText(message);
             mimeMessage.setContent(message, "text/html");
-
-            //send
 
             //step 3 : send the message using Transport class
             Transport.send(mimeMessage);
 
-            System.out.println("Send Success.......");
             flag = true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            e.getMessage();
         }
         return flag;
     }

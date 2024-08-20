@@ -4,16 +4,15 @@
 console.log("this is console");
 
 const toggleSidebar = () => {
-    if($(".sidebar").is(":visible")) {
+    if ($(".sidebar").is(":visible")) {
         //true
 
-        $(".sidebar").css("display","none");
-        $(".content").css("margin-left","0%");
-    }
-    else {
+        $(".sidebar").css("display", "none");
+        $(".content").css("margin-left", "0%");
+    } else {
         //false
-        $(".sidebar").css("display","block");
-        $(".content").css("margin-left","20%");
+        $(".sidebar").css("display", "block");
+        $(".content").css("margin-left", "20%");
     }
 }
 
@@ -22,11 +21,9 @@ const search = () => {
 
     let query = $("#search-input").val();
     console.log(query);
-    if(query === '')
-    {
+    if (query === '') {
         $(".search-result").hide();
-    }
-    else {
+    } else {
         //search
         console.log(query);
 
@@ -64,8 +61,7 @@ const paymentStart = () => {
     var amount = $("#payment_field").val();
     console.log(amount);
 
-    if(amount==="" || amount==null)
-    {
+    if (amount == null) {
         //alert("amount is required !!");
         swal("Failed !!", "amount is required !!", "error");
         return;
@@ -75,25 +71,25 @@ const paymentStart = () => {
     //we will use ajax to send request to server to create order- jquery
     $.ajax(
         {
-            url:'/user/create_order',
-            data:JSON.stringify({amount:amount, info:'order_request'}),
-            contentType:'application/json',
-            type:'POST',
-            dataType:'json',
-            success:function(response){
+            url: '/user/create_order',
+            data: JSON.stringify({amount: amount, info: 'order_request'}),
+            contentType: 'application/json',
+            type: 'POST',
+            dataType: 'json',
+            success: function (response) {
                 //invoked when success
                 console.log(response);
-                if(response.status==="created") {
+                if (response.status === "created") {
                     //open payment form
                     let options = {
-                        key:'rzp_test_Iw3y0w0aj23wxf',
-                        amount:response.amount,
-                        currency:'INR',
-                        name:'Smart Contact Manager',
-                        description:'Donation',
-                        image:'https://yt3.ggpht.com/-4BGUu55s_ko/AAAAAAAAAAI/AAAAAAAAAAA/3Cfl_C4o8Uo/s108-c-k-c0x00ffffff-no-rj-mo/photo.jpg',
-                        order_id:response.id,
-                        handler:function(response) {
+                        key: 'rzp_test_Iw3y0w0aj23wxf',
+                        amount: response.amount,
+                        currency: 'INR',
+                        name: 'Smart Contact Manager',
+                        description: 'Donation',
+                        image: 'https://yt3.ggpht.com/-4BGUu55s_ko/AAAAAAAAAAI/AAAAAAAAAAA/3Cfl_C4o8Uo/s108-c-k-c0x00ffffff-no-rj-mo/photo.jpg',
+                        order_id: response.id,
+                        handler: function (response) {
                             console.log(response.razorpay_payment_id)
                             console.log(response.razorpay_order_id)
                             console.log(response.razorpay_signature)
@@ -123,7 +119,7 @@ const paymentStart = () => {
 
                     let rzp = new Razorpay(options);
 
-                    rzp.on('payment.failed', function (response){
+                    rzp.on('payment.failed', function (response) {
                         console.log(response.error.code);
                         console.log(response.error.description);
                         console.log(response.error.source);
@@ -138,7 +134,7 @@ const paymentStart = () => {
                     rzp.open();
                 }
             },
-            error:function(error){
+            error: function (error) {
                 //invoked when error
                 console.log(error);
                 alert("something went wrong !!")
@@ -147,23 +143,22 @@ const paymentStart = () => {
     )
 };
 
-//
-function updatePaymentOnServer(payment_id, order_id, status)
-{
+
+function updatePaymentOnServer(payment_id, order_id, status) {
     $.ajax({
-        url:'/user/update_order',
-        data:JSON.stringify({
+        url: '/user/update_order',
+        data: JSON.stringify({
             payment_id: payment_id,
             order_id: order_id,
             status: status,
         }),
-        contentType:'application/json',
-        type:'POST',
-        dataType:'json',
-        success:function(response) {
+        contentType: 'application/json',
+        type: 'POST',
+        dataType: 'json',
+        success: function (response) {
             swal("Good job!", "congrates !! Payment successful !!", "success");
         },
-        error:function(error) {
+        error: function (error) {
             swal("Failed !!", "Your payment is successful, but we did not get on server, we will contact you as soon as possible", "error");
         }
     })
