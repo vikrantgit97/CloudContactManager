@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @RequestMapping("/index")
-    public String dashboardHandler() {
+    public String dashboardHandler(Model model, Principal principal) {
         return "normal/user_dashboard";
     }
 

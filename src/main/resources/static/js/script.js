@@ -28,7 +28,7 @@ const search = () => {
         console.log(query);
 
         //sending request to server
-        let url = `http://localhost:8091/search/${query}`;
+        let url = `http://localhost:8080/search/${query}`;
 
         fetch(url)
             .then((response) => {
@@ -87,14 +87,14 @@ const paymentStart = () => {
                         currency: 'INR',
                         name: 'Smart Contact Manager',
                         description: 'Donation',
-                        image: 'https://yt3.ggpht.com/-4BGUu55s_ko/AAAAAAAAAAI/AAAAAAAAAAA/3Cfl_C4o8Uo/s108-c-k-c0x00ffffff-no-rj-mo/photo.jpg',
+                        image: '../img/banner.jpg',
                         order_id: response.id,
                         handler: function (response) {
                             console.log(response.razorpay_payment_id)
                             console.log(response.razorpay_order_id)
                             console.log(response.razorpay_signature)
                             console.log('payment successful !!')
-                            //alert("congrates !! Payment successful !!")
+                            //alert("congrats !! Payment successful !!")
 
                             updatePaymentOnServer(
                                 response.razorpay_payment_id,
@@ -110,7 +110,7 @@ const paymentStart = () => {
                             contact: ""
                         },
                         notes: {
-                            address: "LearnCodeWith Akash",
+                            address: "Learn",
                         },
                         theme: {
                             color: "#3399cc"
@@ -156,7 +156,7 @@ function updatePaymentOnServer(payment_id, order_id, status) {
         type: 'POST',
         dataType: 'json',
         success: function (response) {
-            swal("Good job!", "congrates !! Payment successful !!", "success");
+            swal("Good job!", "congrats !! Payment successful !!", "success");
         },
         error: function (error) {
             swal("Failed !!", "Your payment is successful, but we did not get on server, we will contact you as soon as possible", "error");
