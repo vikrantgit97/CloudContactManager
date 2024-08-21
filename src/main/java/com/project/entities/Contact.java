@@ -14,7 +14,7 @@ public class Contact {
 
     private String name;
 
-    private String secondName;
+    private String lastName;
 
     private String work;
 
@@ -50,11 +50,11 @@ public class Contact {
     }
 
     public String getSecondName() {
-        return secondName;
+        return lastName;
     }
 
     public void setSecondName(String secondName) {
-        this.secondName = secondName;
+        this.lastName = secondName;
     }
 
     public String getWork() {
@@ -110,11 +110,11 @@ public class Contact {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Contact contact = (Contact) o;
-        return cId == contact.cId && Objects.equals(name, contact.name) && Objects.equals(secondName, contact.secondName) && Objects.equals(work, contact.work) && Objects.equals(email, contact.email) && Objects.equals(phone, contact.phone) && Objects.equals(image, contact.image) && Objects.equals(description, contact.description) && Objects.equals(user, contact.user);
+        return cId == contact.cId && Objects.equals(name, contact.name) && Objects.equals(lastName, contact.lastName) && Objects.equals(work, contact.work) && Objects.equals(email, contact.email) && Objects.equals(phone, contact.phone) && Objects.equals(image, contact.image) && Objects.equals(description, contact.description) && Objects.equals(user, contact.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cId, name, secondName, work, email, phone, image, description, user);
+        return Objects.hash(cId, name, lastName, work, email, phone, image, description, user);
     }
 }

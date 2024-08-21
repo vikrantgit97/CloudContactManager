@@ -19,7 +19,7 @@
                         <form th:action="@{/user/change-password}" method="post">
 
                             <!-- Old Password Field -->
-                            <div class="form-group">
+                            <div class="form-group" th:align="center">
                                 <label>
                                     <input name="oldPassword" type="text" class="form-control"
                                            placeholder="Enter old password">
@@ -27,7 +27,7 @@
                             </div>
 
                             <!-- NEW Password Field -->
-                            <div class="form-group">
+                            <div class="form-group" th:align="center">
                                 <label>
                                     <input name="newPassword" type="text" class="form-control"
                                            placeholder="Enter new password">
