@@ -5,7 +5,7 @@ body {
 }
 
 .bg-primary {
-    background: #bd647c !important;
+    background: #ffa060 !important;
 }
 
 .navbar-brand {
@@ -121,12 +121,17 @@ body {
 }
 
 .active {
-    background: #bd647c !important;
-    color: #120909 !important;
+    background: #ffa060 !important;
+    color: #ffe2e2 !important;
 }
 
 .nav-link.active {
-    background: #bd647c !important;
-    font-weight: bold; /* Example styling: change as needed */
-    color: #007bff; /* Example styling: change as needed */
+    background: #ffa060 !important; /* Example styling: change as needed */
+    color: #ffffff !important; 
+    font-weight: bolder;
+}
+
+.nav-link:hover {
+    font-weight: bold; 
+    color: #ffffff!important; 
 }
