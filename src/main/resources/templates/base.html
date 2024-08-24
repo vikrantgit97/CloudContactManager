@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 
-    <title>Base</title>
+    <title>Cloud Contact Manager</title>
     <!-- th:replace="${title}" -->
 </head>
 <body>
@@ -28,71 +28,22 @@
         <span class="navbar-toggler-icon"></span>
     </button>
 
-<!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto text-uppercase">
-            <li class="nav-item active"><a class="nav-link" th:href="@{/home}">Home
-                <span class="sr-only">(current)</span>
-            </a></li>
-            <li class="nav-item"><a class="nav-link" th:href="@{/about}">About</a></li>
-
-            <li class="nav-item"><a class="nav-link" th:href="@{/signin}">Login</a></li>
-
-            <li class="nav-item"><a class="nav-link" th:href="@{/signup}">SignUp</a></li>
-
-        </ul>
-    </div>-->
-
-<!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto text-uppercase">
-            <li class="nav-item"><a class="nav-link" th:href="@{/home}">Home
-            </a></li>
-            <li class="nav-item"><a class="nav-link" th:href="@{/about}">About</a></li>
-
-            <li class="nav-item"><a class="nav-link" th:href="@{/signin}">Login</a></li>
-
-            <li class="nav-item"><a class="nav-link" th:href="@{/signup}">SignUp</a></li>
-
-        </ul>
-    </div>-->
-
-<!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto text-uppercase">
-            <li class="nav-item" th:classappend="${#httpServletRequest.requestURI.contains('/home') ? ' active' : ''}">
-                <a class="nav-link" th:href="@{/home}">Home
-                    <span class="sr-only">(current)</span>
-                </a>
-            </li>
-            <li class="nav-item" th:classappend="${#httpServletRequest.requestURI.contains('/about') ? ' active' : ''}">
-                <a class="nav-link" th:href="@{/about}">About</a>
-            </li>
-            <li class="nav-item" th:classappend="${#httpServletRequest.requestURI.contains('/signin') ? ' active' : ''}">
-                <a class="nav-link" th:href="@{/signin}">Login</a>
-            </li>
-            <li class="nav-item" th:classappend="${#httpServletRequest.requestURI.contains('/signup') ? ' active' : ''}">
-                <a class="nav-link" th:href="@{/signup}">SignUp</a>
-            </li>
-        </ul>
-    </div>-->
-
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav ml-auto text-uppercase">
-            <li class="nav-item active">
-                <a class="nav-link" th:href="@{/home}" id="homeLink" onclick="highlightLink('homeLink')">Home</a>
+            <li class="nav-item">
+                <a class="nav-link" data-page="/home" href="/home">Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" th:href="@{/about}" id="aboutLink" onclick="highlightLink('aboutLink')">About</a>
+                <a class="nav-link" data-page="/about" href="/about">About</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" th:href="@{/signin}" id="loginLink" onclick="highlightLink('loginLink')">Login</a>
+                <a class="nav-link" data-page="/signin" href="/signin">Login</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" th:href="@{/signup}" id="signupLink" onclick="highlightLink('signupLink')">SignUp</a>
+                <a class="nav-link" data-page="/signup" href="/signup">SignUp</a>
             </li>
         </ul>
     </div>
-
-
-
 </nav>
 
 
@@ -113,18 +64,5 @@
         crossorigin="anonymous"></script>
 
 <script th:src="@{/js/script.js}"></script>
-
-<script th:inline="javascript">
-    function highlightLink(linkId) {
-        // Remove the 'active' class from all navigation links
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => link.classList.remove('active'));
-
-        // Add the 'active' class to the clicked link
-        const clickedLink = document.getElementById(linkId);
-        clickedLink.classList.add('active');
-    }
-</script>
-
 </body>
 </html>

@@ -235,6 +235,11 @@ public class UserController {
         return "normal/profile";
     }
 
+    @GetMapping("/change-pass")
+    public String changePassHandler() {
+        return "normal/change_password";
+    }
+
     // Open Setting Handler
     @GetMapping("/settings")
     public String settingHandler() {
