@@ -34,4 +34,11 @@ public class SearchController {
         return ResponseEntity.ok(contacts);
     }
 
+    @GetMapping("/search-user/{query}")
+    public ResponseEntity<?> searchUserHandler(@PathVariable("query") String query, Principal principal){
+        System.out.println(query);
+        User user = this.userRepository.getUserByUserName(principal.getName());
+        List<User> users = this.userRepository.findByNameContaining(query);
+        return ResponseEntity.ok(users);
+    }
 }

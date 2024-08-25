@@ -30,19 +30,19 @@ public class HomeController {
 
     @RequestMapping(value = {"/", "/home"})
     public String home(Model model) {
-        model.addAttribute("title", "Home -smart contact manager");
+        model.addAttribute("title", "Home -cloud contact manager");
         return "home";
     }
 
     @RequestMapping("/about")
     public String about(Model model) {
-        model.addAttribute("title", "About -smart contact manager");
+        model.addAttribute("title", "About -cloud contact manager");
         return "about";
     }
 
     @RequestMapping("/signup")
     public String signup(Model model) {
-        model.addAttribute("title", "Register -smart contact manager");
+        model.addAttribute("title", "Register -cloud contact manager");
         model.addAttribute("user", new User());
         return "signup";
     }
@@ -61,7 +61,7 @@ public class HomeController {
                 model.addAttribute("user", user);
                 return "signup";
             }
-            user.setRole("ROLE_USER");
+            user.setRole("USER");
             user.setEnabled(true);
             user.setImageUrl("default.png");
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));

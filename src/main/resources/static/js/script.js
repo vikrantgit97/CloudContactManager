@@ -54,6 +54,29 @@ const search = () => {
 }
 
 
+const searchForUser = () => {
+
+    let query = $("#search-input").val();
+
+    if (query === '') {
+        $(".search-result").hide();
+    }
+    else {
+        let url = `http://localhost:8080/search-user/${query}`;
+        fetch(url).then((response) => response.json())
+            .then((data) => {
+                let text = `<div class='list-group'>`;
+                data.forEach(user => {
+                    text += `<a href='/admin/user-profile/${user.id}' class='list-group-item list-group-action'>${user.name}</a>`;
+                });
+                text += `</div>`;
+                $(".search-result").html(text);
+                $(".search-result").show();
+            });
+    }
+
+}
+
 //first request- to server to create order
 
 const paymentStart = () => {
@@ -90,9 +113,9 @@ const paymentStart = () => {
                         image: '../img/banner.jpg',
                         order_id: response.id,
                         handler: function (response) {
-                            console.log(response.razorpay_payment_id)
-                            console.log(response.razorpay_order_id)
-                            console.log(response.razorpay_signature)
+                            console.log(response.razorpay_payment_id,
+                                response.razorpay_order_id,
+                                response.razorpay_signature)
                             console.log('payment successful !!')
                             //alert("congrats !! Payment successful !!")
 
@@ -120,13 +143,16 @@ const paymentStart = () => {
                     let rzp = new Razorpay(options);
 
                     rzp.on('payment.failed', function (response) {
-                        console.log(response.error.code);
-                        console.log(response.error.description);
-                        console.log(response.error.source);
-                        console.log(response.error.step);
-                        console.log(response.error.reason);
-                        console.log(response.error.metadata.order_id);
-                        console.log(response.error.metadata.payment_id);
+
+                        console.log(
+                        	response.error.code,
+                        	response.error.description,
+                        	response.error.source,
+                        	response.error.step,
+                        	response.error.reason,
+                        	response.error.metadata.order_id,
+                        	response.error.metadata.payment_id
+                          );
                         //alert("Oops payment failed !!");
                         swal("Failed !!", "Oops payment failed !!", "error");
                     });
