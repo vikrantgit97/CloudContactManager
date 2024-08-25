@@ -45,19 +45,19 @@ public class Config {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req ->
-                        req
-                                .requestMatchers("/admin/**").hasAnyRole("ADMIN")
-                                .requestMatchers("/user/**").hasAnyRole("USER")
-                                .requestMatchers("/**").permitAll()
-                                .anyRequest()
-                                .authenticated()
+
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/**").permitAll()
+                        .anyRequest()
+                        .authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/signin")
                         .loginProcessingUrl("/dologin").defaultSuccessUrl("/user/index")
-                )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
+                );
+                //.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
         return http.build();
     }
 }
